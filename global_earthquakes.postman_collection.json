@@ -1,0 +1,597 @@
+{
+	"info": {
+		"_postman_id": "c1f885e3-c23f-4e0d-b4f0-8c2957b42026",
+		"name": "Global Earthquakes API (Full-Stack 2026)",
+		"description": "Production-ready Postman test suite for the Global Earthquakes Express & MongoDB backend. Utilizes environment tokens for smooth authentication routing flows.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@earthquakes.com\",\n  \"password\": \"user123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register Admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testadmin\",\n  \"email\": \"testadmin@earthquakes.com\",\n  \"password\": \"admin123\",\n  \"role\": \"admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data.token) {",
+									"    pm.collectionVariables.set(\"userToken\", jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"testuser@earthquakes.com\",\n  \"password\": \"user123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data.token) {",
+									"    pm.collectionVariables.set(\"adminToken\", jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"testadmin@earthquakes.com\",\n  \"password\": \"admin123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Earthquakes",
+			"item": [
+				{
+					"name": "List Earthquakes (Paginated & Sorted)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/earthquakes?page=1&limit=10&sort=-time",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"earthquakes"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "-time"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Magnitude Range & Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/earthquakes?minMag=4.5&maxMag=7.0&status=reviewed",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"earthquakes"
+							],
+							"query": [
+								{
+									"key": "minMag",
+									"value": "4.5"
+								},
+								{
+									"key": "maxMag",
+									"value": "7.0"
+								},
+								{
+									"key": "status",
+									"value": "reviewed"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Regex Search by Location Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/earthquakes?search=California",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"earthquakes"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "California"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Geospatial Spatial Radius Search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/earthquakes?latitude=34.05&longitude=-118.24&maxDistanceKm=500",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"earthquakes"
+							],
+							"query": [
+								{
+									"key": "latitude",
+									"value": "34.05"
+								},
+								{
+									"key": "longitude",
+									"value": "-118.24"
+								},
+								{
+									"key": "maxDistanceKm",
+									"value": "500"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Aggregate Seismic Statistics (Stats)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/earthquakes/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"earthquakes",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Earthquake",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/earthquakes/mock100001",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"earthquakes",
+								"mock100001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Earthquake (Admin Block)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"eventId\": \"custom2026eq\",\n  \"mag\": 6.8,\n  \"place\": \"12km E of Sendai, Japan\",\n  \"time\": \"2026-05-22T12:00:00Z\",\n  \"type\": \"earthquake\",\n  \"geometry\": {\n    \"type\": \"Point\",\n    \"coordinates\": [141.01, 38.26, 24.5]\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/earthquakes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"earthquakes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Earthquake (Admin Block)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"place\": \"12km E of Sendai, Japan (REVISED)\",\n  \"alert\": \"yellow\",\n  \"tsunami\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/earthquakes/custom2026eq",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"earthquakes",
+								"custom2026eq"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Earthquake (Admin Block)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/earthquakes/custom2026eq",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"earthquakes",
+								"custom2026eq"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Felt Reports",
+			"item": [
+				{
+					"name": "Submit Felt Report",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data._id) {",
+									"    pm.collectionVariables.set(\"reportId\", jsonData.data._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"earthquakeId\": \"mock100005\",\n  \"feltIntensity\": 6,\n  \"comments\": \"The ground was shaking side-to-side and hanging lamps were swinging heavily.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reports",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reports for Specific Earthquake",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reports/earthquake/mock100005",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"earthquake",
+								"mock100005"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Felt Report",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reports/{{reportId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"{{reportId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "System",
+			"item": [
+				{
+					"name": "Server Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "userToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "adminToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "reportId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
