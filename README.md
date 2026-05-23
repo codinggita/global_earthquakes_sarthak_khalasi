@@ -34,36 +34,39 @@ The repository enforces a clean, modular MVC structure separating database conce
 
 ```
 global_earthquakes/
-├── config/
-│   └── db.js                 # MongoDB connection & config
-├── controllers/
-│   ├── authController.js     # User registration, login, logout, profile
-│   ├── earthquakeController.js # CRUD, searching, pagination, stats aggregation
-│   └── userReportController.js # CRUD for felt reports & user relationships
-├── services/
-│   ├── authService.js        # Auth logic, JWT handling
-│   ├── earthquakeService.js  # Querying & aggregation pipelines
-│   └── userReportService.js  # Business logic for user felt reports
-├── models/
-│   ├── User.js               # User authentication model
-│   ├── Earthquake.js         # Earthquake event model
-│   └── UserReport.js         # Felt reports (referential relationship)
-├── routes/
-│   ├── authRoutes.js         # /api/v1/auth/*
-│   ├── earthquakeRoutes.js   # /api/v1/earthquakes/*
-│   └── userReportRoutes.js   # /api/v1/reports/*
-├── middlewares/
-│   ├── authMiddleware.js     # JWT verification & RBAC check
-│   ├── errorMiddleware.js    # Global centralized error handler
-│   ├── loggerMiddleware.js   # Custom logging middleware
-│   └── rateLimiter.js        # Basic rate limiting
-├── utils/
-│   ├── apiResponse.js        # Standardized API response format
-│   ├── asyncHandler.js       # Centralized async try-catch wrapper
-│   └── seeder.js             # Database seeding script (USGS Live data)
-├── .env                      # Local environmental configuration
-├── package.json              # NPM dependencies
-└── server.js                 # Entrypoint
+├── backend/                      # Backend API Server
+│   ├── config/
+│   │   └── db.js                 # MongoDB connection & config
+│   ├── controllers/
+│   │   ├── authController.js     # User registration, login, logout, profile
+│   │   ├── earthquakeController.js # CRUD, searching, pagination, stats aggregation
+│   │   └── userReportController.js # CRUD for felt reports & user relationships
+│   ├── services/
+│   │   ├── authService.js        # Auth logic, JWT handling
+│   │   ├── earthquakeService.js  # Querying & aggregation pipelines
+│   │   └── userReportService.js  # Business logic for user felt reports
+│   ├── models/
+│   │   ├── User.js               # User authentication model
+│   │   ├── Earthquake.js         # Earthquake event model
+│   │   └── UserReport.js         # Felt reports (referential relationship)
+│   ├── routes/
+│   │   ├── authRoutes.js         # /api/v1/auth/*
+│   │   ├── earthquakeRoutes.js   # /api/v1/earthquakes/*
+│   │   └── userReportRoutes.js   # /api/v1/reports/*
+│   ├── middlewares/
+│   │   ├── authMiddleware.js     # JWT verification & RBAC check
+│   │   ├── errorMiddleware.js    # Global centralized error handler
+│   │   ├── loggerMiddleware.js   # Custom logging middleware
+│   │   └── rateLimiter.js        # Basic rate limiting
+│   ├── utils/
+│   │   ├── apiResponse.js        # Standardized API response format
+│   │   ├── asyncHandler.js       # Centralized async try-catch wrapper
+│   │   └── seeder.js             # Database seeding script (USGS Live data)
+│   ├── .env.example              # Environment variables template
+│   ├── package.json              # NPM dependencies
+│   └── server.js                 # Entrypoint
+├── .gitignore
+└── README.md
 ```
 
 ---
@@ -78,11 +81,12 @@ Ensure you have the following installed on your machine:
 ### 2. Install Dependencies
 Clone the repository and install the required Node modules:
 ```bash
+cd backend
 npm install
 ```
 
 ### 3. Environment Configuration
-Create a `.env` file in the root directory (you can copy `.env.example` as a starting point):
+Create a `.env` file in the `backend/` directory (you can copy `.env.example` as a starting point):
 ```env
 # Server Settings
 PORT=5000
