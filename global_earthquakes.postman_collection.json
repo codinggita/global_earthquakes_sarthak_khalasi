@@ -2,12 +2,13 @@
 	"info": {
 		"_postman_id": "c1f885e3-c23f-4e0d-b4f0-8c2957b42026",
 		"name": "Global Earthquakes API (Full-Stack 2026)",
-		"description": "Production-ready Postman test suite for the Global Earthquakes Express & MongoDB backend. Utilizes environment tokens for smooth authentication routing flows.",
+		"description": "# 🌍 Global Earthquakes Backend System - Comprehensive API Reference\n\nWelcome to the official, enterprise-grade API test suite and documentation for the **Global Earthquakes Backend System**. This API acts as the central data gateway and processing engine for global seismic events, crowd-sourced felt reports, and statistical analytics.\n\n---\n\n## 🚀 Architectural Overview\nThe backend is built using the high-performance **Node.js, Express, and MongoDB (Mongoose)** stack, organized under the industry-standard **Model-View-Controller (MVC)** architectural pattern. \n\n### Core Highlights:\n1. **Real-time Live Integration**: Integrates directly with the **United States Geological Survey (USGS) GeoJSON Feed** to automatically seed live, high-magnitude seismic events.\n2. **Advanced Geo-Spatial Queries**: Employs spherical coordinate algorithms (`$geoWithin` and `$centerSphere`) using 2D sphere spatial indexes to execute geographical proximity searches.\n3. **High-Performance Aggregations**: Uses MongoDB's parallel multi-stage `$facet` pipelines to compile statistical analytics, regional average depths, monthly trends, and severity buckets in a single database round-trip.\n4. **Role-Based Access Control (RBAC)**: Enforces fine-grained credential verification (JWT-based) to safeguard data mutating endpoints (`POST`, `PUT`, `DELETE`).\n\n---\n\n## ⚙️ Authentication & Environment Variables\n\nThis collection is configured to run out-of-the-box in both local and production environments. It utilizes **Collection-level Variables** to maintain state, meaning you do not have to manually copy and paste authentication tokens!\n\n### State-Tracking Variables:\n* `baseUrl`: The root API endpoint. Defaults to `http://localhost:5000/api/v1`.\n* `userToken`: Set dynamically when you execute the `Login User` request.\n* `adminToken`: Set dynamically when you execute the `Login Admin` request.\n* `reportId`: Set dynamically when you submit a new Felt Report.\n\n---\n\n## 📋 Table of Contents & Quick Links\n* 🔒 [Authentication Services](#folder-Auth) - Manage user registration, secure login sessions, and JWT profile lookups.\n* 🌍 [Earthquake Event Channels](#folder-Earthquakes) - Query paginated results, execute geospatial distance searches, compile aggregations, and perform CRUD actions.\n* 📊 [Crowd-Sourced Felt Reports](#folder-Felt-Reports) - Log intensity felt reports and query regional feedback.\n* 🏥 [System Health Heartbeat](#folder-System) - Monitor CPU usage, memory, database readiness, and server uptime.\n* 💻 [Project Presentation Guide](file:///c:/Users/Admin/OneDrive/Desktop/global_earthquakes/PROJECT_PRESENTATION_GUIDE.md) - Your local cheat sheet for the live presentation.\n* 🛰️ [Local API Documentation Markdown](file:///c:/Users/Admin/OneDrive/Desktop/global_earthquakes/API_DOCUMENTATION.md) - Complete offline reference guide.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "Auth",
+			"description": "# 🔒 Authentication & Identity Management\n\nThis folder compiles all user registration, secure credential validation, profile retrieval, and session termination endpoints. It uses modern **JWT credentials security** and supports both secure Authorization headers and HttpOnly secure cookies.\n\n### 🛡️ Security Policies:\n* Passwords are automatically hashed on the database level using `bcrypt` (10 rounds).\n* Authentication tokens expire in `7 days` by default.",
 			"item": [
 				{
 					"name": "Register User",
@@ -32,7 +33,8 @@
 								"auth",
 								"register"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `POST /auth/register` (Public)\n\nRegisters a new standard user account in the system database. Upon successful registration, the API automatically issues a secure JWT token returned in the payload and binds an HttpOnly cookie to establish a session.\n\n#### 📥 Expected JSON Input:\n* `username` (string, required): Minimum 3 characters. Unique.\n* `email` (string, required): Valid email address formatting. Unique.\n* `password` (string, required): Minimum 6 characters.\n\n#### 📤 Example Successful Response (201 Created):\n```json\n{\n  \"success\": true,\n  \"statusCode\": 201,\n  \"message\": \"User registered successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"665c84d6b...\",\n      \"username\": \"testuser\",\n      \"email\": \"testuser@earthquakes.com\",\n      \"role\": \"user\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsIn...\"\n  }\n}\n```"
 					},
 					"response": []
 				},
@@ -59,7 +61,8 @@
 								"auth",
 								"register"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `POST /auth/register` (Admin Spec, Public)\n\nThis request registers a user with explicit `admin` status. In a production system, this route is restricted or protected, but it is available here to easily bootstrap default administrative testing capabilities.\n\n#### 📥 Expected JSON Input:\n* `username`: \"testadmin\"\n* `email`: \"testadmin@earthquakes.com\"\n* `password`: \"admin123\"\n* `role`: \"admin\""
 					},
 					"response": []
 				},
@@ -100,7 +103,8 @@
 								"auth",
 								"login"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `POST /auth/login` (Public)\n\nAuthenticates a standard user. It includes a Postman **Post-response script** that extracts the returned JWT token from the response payload and automatically saves it to your collection variable `{{userToken}}`.\n\n#### 💡 Automation Highlight:\nSubsequent requests requiring standard user privileges automatically use the `{{userToken}}` variable in their headers, creating a completely automated, click-and-run testing flow."
 					},
 					"response": []
 				},
@@ -141,7 +145,8 @@
 								"auth",
 								"login"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `POST /auth/login` (Admin Profile, Public)\n\nAuthenticates an administrative user. It includes an automated Post-response script saving the administrative token to the collection variable `{{adminToken}}`.\n\n#### 💡 Automation Highlight:\nSubsequent requests requiring administrative permissions (such as manual logging, updating, or deleting seismic events) automatically use the `{{adminToken}}` variable in their Authorization headers."
 					},
 					"response": []
 				},
@@ -165,7 +170,8 @@
 								"auth",
 								"profile"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `GET /auth/profile` (Protected)\n\nRetrieves profile details (username, email, role) of the currently authenticated user. \n\n* **Required Headers**: `Authorization: Bearer {{userToken}}`\n* **Behavior**: Decodes the JWT token payload, verifies database record existence, and strips the hashed password before returning user metadata."
 					},
 					"response": []
 				},
@@ -183,7 +189,8 @@
 								"auth",
 								"logout"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `POST /auth/logout` (Public)\n\nClears the authenticated secure cookie state from the browser and overrides the session state."
 					},
 					"response": []
 				}
@@ -191,6 +198,7 @@
 		},
 		{
 			"name": "Earthquakes",
+			"description": "# 🌍 Earthquake Event Channels & Queries\n\nThis module contains all channels for querying, searching, filtering, and managing global seismic events. It showcases advanced MongoDB features such as **dynamic query building**, **2D spherical geospatial calculations**, and **complex aggregation framework pipelines**.",
 			"item": [
 				{
 					"name": "List Earthquakes (Paginated & Sorted)",
@@ -219,7 +227,8 @@
 									"value": "-time"
 								}
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `GET /earthquakes` (Public)\n\nRetrieves a list of seismic events, leveraging a **reusable pagination utility** and a **dynamic sort builder**.\n\n#### 📈 Query Parameters:\n* `page` (number, optional): Page index to query. Defaults to `1`.\n* `limit` (number, optional): Records per page. Defaults to `20`.\n* `sort` (string, optional): Sort sorting. E.g. `-time` (newest first), `mag` (weakest first), `-mag` (strongest first).\n\n#### 📥 Example Response Meta Structure:\n```json\n\"meta\": {\n  \"totalRecords\": 305,\n  \"totalPages\": 31,\n  \"currentPage\": 1,\n  \"limit\": 10,\n  \"hasNextPage\": true,\n  \"hasPrevPage\": false\n}\n```"
 					},
 					"response": []
 				},
@@ -250,7 +259,8 @@
 									"value": "reviewed"
 								}
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `GET /earthquakes` (Filtered, Public)\n\nShowcases the backend's **dynamic filter builder**. It dynamically parses boundaries for magnitudes and chronological conditions without cluttering database layers.\n\n#### 📈 Filter Parameters:\n* `minMag` (number): Filters events where magnitude is `$gte` minMag.\n* `maxMag` (number): Filters events where magnitude is `$lte` maxMag.\n* `status` (string): Filters reviewed state (`reviewed` or `automatic`)."
 					},
 					"response": []
 				},
@@ -273,7 +283,8 @@
 									"value": "California"
 								}
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `GET /earthquakes` (Sub-string search, Public)\n\nExecutes a case-insensitive regular expression (`$regex`) sub-string match query on the `place` name attribute (e.g. finding events containing \"California\", \"Fiji\", or \"Japan\")."
 					},
 					"response": []
 				},
@@ -304,7 +315,8 @@
 									"value": "500"
 								}
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `GET /earthquakes` (Geospatial, Public)\n\nPerforms an advanced coordinates proximity lookup using MongoDB's `$geoWithin` and `$centerSphere` spherical calculations. \n\n* **Requires**: A `2dsphere` geospatial index on the database `geometry` coordinate key (pre-configured in your database schema).\n* **Query Parameters**:\n  * `latitude` (number, required): Center latitude coordinate.\n  * `longitude` (number, required): Center longitude coordinate.\n  * `maxDistanceKm` (number, optional): Distance radius. Defaults to `500`."
 					},
 					"response": []
 				},
@@ -322,7 +334,8 @@
 								"earthquakes",
 								"stats"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `GET /earthquakes/stats` (Public)\n\n#### 📈 Central Statistical Aggregation Engine\nThis high-performance statistical compiler runs a complex MongoDB Aggregation Pipeline processing parallel analysis tracks in **one database round-trip** via `$facet`:\n\n1. **severityTiers**: Groups events into magnitude classifications (`$bucket` boundaries: 0, 4.0, 5.0, 6.0, 7.0, 10.0).\n2. **tsunamiRisk**: Calculates risk trigger ratios.\n3. **regionalFrequencies**: Groups reporting networks, ranking frequencies, maximum magnitude peaks, and average event depths.\n4. **monthlyTrends**: Sorts event rates chronologically over the past 12 months.\n5. **topSignificantEvents**: Filters and ranks the top 5 highest impact occurrences based on their significance index."
 					},
 					"response": []
 				},
@@ -340,7 +353,8 @@
 								"earthquakes",
 								"mock100001"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `GET /earthquakes/:id` (Public)\n\nRetrieves detail payload records for a single earthquake event.\n\n* **Flexibility**: The backend dynamically detects whether the passed `:id` is a standard 24-character Mongoose MongoDB `ObjectID` or a custom alphanumeric USGS `eventId` string (e.g. `mock100001`), querying the appropriate index dynamically."
 					},
 					"response": []
 				},
@@ -372,7 +386,8 @@
 							"path": [
 								"earthquakes"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `POST /earthquakes` (Admin-Only)\n\nLogs a new manual seismic event in the system.\n\n* **Access Restrictions**: Requires a valid administrative login session token. Enforced via global Role-Based Access Control (`protect` & `authorize('admin')` middleware).\n* **Required Headers**: `Authorization: Bearer {{adminToken}}`\n* **Request Validation**: Coordinates must be formatted as exactly 3 numbers: `[longitude, latitude, depth]` in accordance with Mongoose schema rules."
 					},
 					"response": []
 				},
@@ -405,7 +420,8 @@
 								"earthquakes",
 								"custom2026eq"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `PUT /earthquakes/:id` (Admin-Only)\n\nUpdates properties of an existing seismic event log.\n\n* **Required Headers**: `Authorization: Bearer {{adminToken}}`\n* **Parameters**: Accepts both MongoDB Object IDs and custom USGS Event ID strings."
 					},
 					"response": []
 				},
@@ -429,7 +445,8 @@
 								"earthquakes",
 								"custom2026eq"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `DELETE /earthquakes/:id` (Admin-Only)\n\nRemoves an earthquake log permanently from the database. Enforces strict administrative session locks."
 					},
 					"response": []
 				}
@@ -437,6 +454,7 @@
 		},
 		{
 			"name": "Felt Reports",
+			"description": "# 📊 Crowd-Sourced Intensity Felt Reports\n\nThis directory manages public crowd-sourced felt intensity feedback reports. It allows standard users to log shaking intensities (on a scale of 1-10) and automatically maintains referential document-level metadata counters in the associated parent Earthquake logs.",
 			"item": [
 				{
 					"name": "Submit Felt Report",
@@ -480,7 +498,8 @@
 							"path": [
 								"reports"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `POST /reports` (Protected)\n\nLogs a crowd felt intensity report for an event. It automatically updates the parent `Earthquake` document's felt counter and contains a script saving the generated ID to `{{reportId}}`.\n\n* **Required Headers**: `Authorization: Bearer {{userToken}}`\n* **Unique Conditions Enforced**: An index on `{ user: 1, earthquake: 1 }` prevents a single user from submitting duplicate reports for the same event.\n* **Atomic Increments**: Employs Mongoose atomic `$inc` updates on the parent earthquake document, maintaining exact relational counts under heavy concurrencies."
 					},
 					"response": []
 				},
@@ -499,7 +518,8 @@
 								"earthquake",
 								"mock100005"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `GET /reports/earthquake/:eventId` (Public)\n\nRetrieves all public crowd-sourced felt reports submitted for an event, automatically populating the associated user parameters (username, email, role) while hiding database credentials."
 					},
 					"response": []
 				},
@@ -523,7 +543,8 @@
 								"reports",
 								"{{reportId}}"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `DELETE /reports/:id` (Protected)\n\nDeletes a felt report.\n\n* **Access Restrictions**: Enforces strict permission limits. A user can only delete a report if they are the original author of the document, or if they have administrative permissions (`admin` role).\n* **Atomic Decrements**: Deleting a report automatically fires a `$inc: -1` operator on the parent earthquake's counters to preserve data integrity."
 					},
 					"response": []
 				}
@@ -531,6 +552,7 @@
 		},
 		{
 			"name": "System",
+			"description": "# 🏥 System Health Monitoring\n\nEndpoints monitoring active server diagnostics, uptime load metrics, and database connectivity ready-states.",
 			"item": [
 				{
 					"name": "Server Health Check",
@@ -545,7 +567,8 @@
 							"path": [
 								"health"
 							]
-						}
+						},
+						"description": "### 🔹 Endpoint: `GET /health` (Public)\n\nCompiles server-side system health metrics.\n\n#### 📈 Diagnostics Returned:\n* Server ready status.\n* Exact ISO timestamps.\n* Server uptime in seconds.\n* Comprehensive memory consumption profiles (`rss`, `heapTotal`, `heapUsed`, `external`, `arrayBuffers`).\n* Detailed CPU load cycles (`user`, `system`).\n* Active MongoDB connection states (0: Disconnected, 1: Connected, 2: Connecting, 3: Disconnecting)."
 					},
 					"response": []
 				}
