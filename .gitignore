@@ -1,0 +1,36 @@
+# Dependencies (all subdirectories)
+**/node_modules/
+**/jspm_packages/
+
+# Local Environment Variables (never commit secrets)
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+# Dependencies (all subdirectories)
+**/node_modules/
+**/jspm_packages/
+
+# Local Environment Variables (never commit secrets)
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# System / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.backup_code/  
