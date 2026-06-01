@@ -61,7 +61,8 @@ global_earthquakes/
 │   ├── apiResponse.js        # Standardized API response format
 │   ├── asyncHandler.js       # Centralized async try-catch wrapper
 │   └── seeder.js             # Database seeding script (USGS Live data)
-├── .env                      # Local environmental configuration
+├── .env.example              # Environment variables template
+├── .gitignore
 ├── package.json              # NPM dependencies
 └── server.js                 # Entrypoint
 ```
@@ -76,7 +77,7 @@ Ensure you have the following installed on your machine:
 *   [MongoDB](https://www.mongodb.com/) (Local server or MongoDB Atlas URI)
 
 ### 2. Install Dependencies
-Clone the repository and install the required Node modules:
+Clone the repository and install the required Node modules in the root directory:
 ```bash
 npm install
 ```
