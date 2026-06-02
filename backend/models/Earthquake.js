@@ -137,6 +137,11 @@ const earthquakeSchema = new mongoose.Schema(
         },
       },
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true, // Fast soft-delete filter queries
+    },
   },
   {
     timestamps: true, // Audit timestamps
@@ -148,6 +153,9 @@ earthquakeSchema.index({ geometry: '2dsphere' });
 
 // Compound indexes for frequent searches
 earthquakeSchema.index({ mag: -1, time: -1 });
+
+// Compound index to speed up soft-delete + magnitude/time queries together
+earthquakeSchema.index({ isDeleted: 1, mag: -1, time: -1 });
 
 const Earthquake = mongoose.model('Earthquake', earthquakeSchema);
 

@@ -9,6 +9,7 @@ class EarthquakeService {
    * Create a new earthquake record (Admin only).
    */
   static async createEarthquake(data) {
+    // Check both active and soft-deleted records to prevent duplicate eventIds
     const exists = await Earthquake.findOne({ eventId: data.eventId });
     if (exists) {
       throw new ApiError(400, `An earthquake with Event ID [${data.eventId}] already exists.`);
@@ -21,12 +22,13 @@ class EarthquakeService {
    */
   static async getEarthquakeById(id) {
     let eq = null;
-    
+
     // Check if id is a valid Mongoose ObjectId, otherwise look up by eventId
+    // isDeleted: false ensures soft-deleted records are invisible
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      eq = await Earthquake.findById(id);
+      eq = await Earthquake.findOne({ _id: id, isDeleted: false });
     } else {
-      eq = await Earthquake.findOne({ eventId: id });
+      eq = await Earthquake.findOne({ eventId: id, isDeleted: false });
     }
 
     if (!eq) {
@@ -52,9 +54,14 @@ class EarthquakeService {
   /**
    * Safely deletes an earthquake record (Admin only).
    */
+  /**
+   * Soft-deletes an earthquake record by flipping isDeleted = true (Admin only).
+   * The document is retained in the database for audit and recovery purposes.
+   */
   static async deleteEarthquake(id) {
     const eq = await this.getEarthquakeById(id);
-    await Earthquake.deleteOne({ _id: eq._id });
+    eq.isDeleted = true;
+    await eq.save();
     return eq;
   }
 
@@ -63,7 +70,8 @@ class EarthquakeService {
    * Fulfills Advanced Query requirements (Filter, Search, Pagination, Sort).
    */
   static async listEarthquakes(query) {
-    const filter = {};
+    // Always exclude soft-deleted records from public listings
+    const filter = { isDeleted: false };
 
     // 1. DYNAMIC FILTER BUILDER (Good-to-have #12)
     
@@ -163,8 +171,8 @@ class EarthquakeService {
    */
   static async getEarthquakeStats() {
     const pipeline = [
-      // Stage 1: Match all records (can be extended to filter past N days)
-      { $match: {} },
+      // Stage 1: Exclude soft-deleted records from all aggregation calculations
+      { $match: { isDeleted: false } },
 
       // Stage 2: Facet-driven parallel pipelines
       {

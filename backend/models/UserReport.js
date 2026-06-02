@@ -41,6 +41,11 @@ const userReportSchema = new mongoose.Schema(
         },
       },
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true, // Fast soft-delete filter queries
+    },
   },
   {
     timestamps: true,
@@ -49,6 +54,9 @@ const userReportSchema = new mongoose.Schema(
 
 // Geo-spatial index for user reports
 userReportSchema.index({ location: '2dsphere' });
+
+// Compound index for fast soft-delete + date queries
+userReportSchema.index({ isDeleted: 1, createdAt: -1 });
 
 const UserReport = mongoose.model('UserReport', userReportSchema);
 
