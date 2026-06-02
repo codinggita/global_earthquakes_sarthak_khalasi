@@ -13,20 +13,20 @@ class UserReportService {
       throw new ApiError(400, 'Earthquake ID is required to submit a report.');
     }
 
-    // Verify earthquake exists
+    // Verify earthquake exists and is not soft-deleted
     let eq = null;
     if (earthquakeId.match(/^[0-9a-fA-F]{24}$/)) {
-      eq = await Earthquake.findById(earthquakeId);
+      eq = await Earthquake.findOne({ _id: earthquakeId, isDeleted: false });
     } else {
-      eq = await Earthquake.findOne({ eventId: earthquakeId });
+      eq = await Earthquake.findOne({ eventId: earthquakeId, isDeleted: false });
     }
 
     if (!eq) {
       throw new ApiError(404, `Referenced earthquake event [${earthquakeId}] not found.`);
     }
 
-    // Check if user already reported this earthquake (prevent spam)
-    const existing = await UserReport.findOne({ user: userId, earthquake: eq._id });
+    // Check if user already reported this earthquake (prevent spam, exclude soft-deleted reports)
+    const existing = await UserReport.findOne({ user: userId, earthquake: eq._id, isDeleted: false });
     if (existing) {
       throw new ApiError(400, 'You have already submitted a felt report for this earthquake.');
     }
@@ -52,7 +52,8 @@ class UserReportService {
    * Retrieves a single report (owner or admin only).
    */
   static async getReportById(id, userId, role) {
-    const report = await UserReport.findById(id)
+    // isDeleted: false ensures soft-deleted reports are invisible
+    const report = await UserReport.findOne({ _id: id, isDeleted: false })
       .populate('user', 'username email')
       .populate('earthquake', 'eventId title mag time place');
     
@@ -72,7 +73,8 @@ class UserReportService {
    * List reports with sorting, pagination, and filtering.
    */
   static async listReports(query, userId, role) {
-    const filter = {};
+    // Always exclude soft-deleted reports from public listings
+    const filter = { isDeleted: false };
 
     // Standard users can only view their own reports, admins can view all or filter by user
     if (role !== 'admin') {
@@ -85,9 +87,9 @@ class UserReportService {
     if (query.earthquakeId) {
       let eq = null;
       if (query.earthquakeId.match(/^[0-9a-fA-F]{24}$/)) {
-        eq = await Earthquake.findById(query.earthquakeId);
+        eq = await Earthquake.findOne({ _id: query.earthquakeId, isDeleted: false });
       } else {
-        eq = await Earthquake.findOne({ eventId: query.earthquakeId });
+        eq = await Earthquake.findOne({ eventId: query.earthquakeId, isDeleted: false });
       }
       if (eq) {
         filter.earthquake = eq._id;
@@ -134,7 +136,8 @@ class UserReportService {
    * Update report fields (owner only).
    */
   static async updateReport(id, userId, data) {
-    const report = await UserReport.findById(id);
+    // isDeleted: false so soft-deleted reports cannot be edited
+    const report = await UserReport.findOne({ _id: id, isDeleted: false });
 
     if (!report) {
       throw new ApiError(404, `User report with ID [${id}] not found.`);
@@ -165,8 +168,13 @@ class UserReportService {
   /**
    * Delete report (owner or admin only).
    */
+  /**
+   * Soft-deletes a user report by flipping isDeleted = true.
+   * Owner can soft-delete their own report; Admin can soft-delete any report.
+   * The document is retained in the database for audit and recovery purposes.
+   */
   static async deleteReport(id, userId, role) {
-    const report = await UserReport.findById(id);
+    const report = await UserReport.findOne({ _id: id, isDeleted: false });
 
     if (!report) {
       throw new ApiError(404, `User report with ID [${id}] not found.`);
@@ -177,7 +185,8 @@ class UserReportService {
       throw new ApiError(403, 'You are not authorized to delete this report.');
     }
 
-    await UserReport.deleteOne({ _id: report._id });
+    report.isDeleted = true;
+    await report.save();
     return report;
   }
 
@@ -197,7 +206,8 @@ class UserReportService {
     }
 
     const stats = await UserReport.aggregate([
-      { $match: { earthquake: eq._id } },
+      // Exclude soft-deleted reports so stats only reflect active submissions
+      { $match: { earthquake: eq._id, isDeleted: false } },
       {
         $group: {
           _id: '$earthquake',
