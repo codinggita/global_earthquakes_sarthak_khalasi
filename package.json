@@ -5,6 +5,7 @@
   "scripts": {
     "start": "npm start --prefix backend",
     "dev": "npm run dev --prefix backend",
-    "seed": "npm run seed --prefix backend"
+    "seed": "npm run seed --prefix backend",
+    "backup": "npm run backup --prefix backend"
   }
 }
