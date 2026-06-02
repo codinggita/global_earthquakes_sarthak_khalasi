@@ -1,15 +1,28 @@
 import express from 'express';
 import UserReportController from '../controllers/userReportController.js';
 import { protect } from '../middlewares/authMiddleware.js';
+import { validate } from '../middlewares/validationMiddleware.js';
 
 const router = express.Router();
+
+// Input validation schema for felt reports
+const reportSchema = {
+  earthquakeId: { required: true, type: 'string' },
+  feltIntensity: { 
+    required: true, 
+    type: 'number', 
+    validate: (val) => val >= 1 && val <= 10,
+    message: 'Felt intensity must be a number between 1 (not felt) and 10 (extreme).' 
+  },
+  comments: { required: false, type: 'string' }
+};
 
 // Protect all routes under this module
 router.use(protect);
 
 // Core CRUD endpoints
 router.route('/')
-  .post(UserReportController.create)
+  .post(validate(reportSchema), UserReportController.create)
   .get(UserReportController.list);
 
 // Aggregation statistics endpoint
