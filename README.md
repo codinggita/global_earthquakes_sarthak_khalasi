@@ -70,3 +70,8 @@ The JSON file is written to `../global_earthquakes_backups/` (outside the repo) 
 
 ## 📄 License
 This project is licensed under the MIT License.
+
+
+---
+
+
