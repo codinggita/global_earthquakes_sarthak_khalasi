@@ -12,6 +12,7 @@ router.get('/:id', EarthquakeController.getOne);
 // Protected routes (Admin-only locks for write/modify actions)
 router.post('/', protect, authorize('admin'), EarthquakeController.create);
 router.put('/:id', protect, authorize('admin'), EarthquakeController.update);
+router.patch('/:id', protect, authorize('admin'), EarthquakeController.patch);
 router.delete('/:id', protect, authorize('admin'), EarthquakeController.delete);
 
 export default router;

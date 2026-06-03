@@ -296,6 +296,20 @@ class EarthquakeService {
     const stats = await Earthquake.aggregate(pipeline);
     return stats[0];
   }
+
+  /**
+   * Patches an existing earthquake record (Admin only).
+   */
+  static async patchEarthquake(id, data) {
+    const disallowedFields = ['_id', 'id', 'eventId', 'isDeleted'];
+    disallowedFields.forEach((field) => {
+      if (data[field] !== undefined) {
+        throw new ApiError(400, `Field [${field}] cannot be modified via PATCH.`);
+      }
+    });
+
+    return await this.updateEarthquake(id, data);
+  }
 }
 
 export default EarthquakeService;

@@ -74,6 +74,18 @@ class UserReportController {
       ApiResponse.success(200, { deletedId: report._id }, 'Felt report deleted successfully')
     );
   });
+
+  /**
+   * Patches an existing report (owner only).
+   * Route: PATCH /api/v1/reports/:id
+   */
+  static patch = asyncHandler(async (req, res) => {
+    const report = await UserReportService.patchReport(req.params.id, req.user.id, req.body);
+
+    res.status(200).json(
+      ApiResponse.success(200, report, 'Felt report patched successfully')
+    );
+  });
 }
 
 export default UserReportController;

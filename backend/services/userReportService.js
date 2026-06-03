@@ -230,6 +230,20 @@ class UserReportService {
 
     return stats.length > 0 ? stats[0] : { totalReports: 0, averageIntensity: 0, maxIntensity: 0, minIntensity: 0 };
   }
+
+  /**
+   * Patches an existing user report (Owner only).
+   */
+  static async patchReport(id, userId, data) {
+    const disallowedFields = ['_id', 'user', 'earthquake', 'isDeleted'];
+    disallowedFields.forEach((field) => {
+      if (data[field] !== undefined) {
+        throw new ApiError(400, `Field [${field}] cannot be modified via PATCH.`);
+      }
+    });
+
+    return await this.updateReport(id, userId, data);
+  }
 }
 
 export default UserReportService;
