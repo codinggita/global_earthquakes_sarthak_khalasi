@@ -134,7 +134,7 @@ const seedData = async () => {
 
     // 3. Seed Earthquakes
     let earthquakes = [];
-    const datasetPath = path.resolve(__dirname, '../../dataset.json');
+    const datasetPath = path.resolve(__dirname, '../../../dataset.json');
     let hasLocalDataset = false;
 
     try {
