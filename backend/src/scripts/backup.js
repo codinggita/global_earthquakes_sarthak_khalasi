@@ -54,7 +54,7 @@ const runBackup = async () => {
     };
 
     // 4. Resolve backup path (external to the project repository)
-    const backupDir = path.join(__dirname, '../../../global_earthquakes_backups');
+    const backupDir = path.join(__dirname, '../../../../global_earthquakes_backups');
     if (!fs.existsSync(backupDir)) {
       fs.mkdirSync(backupDir, { recursive: true });
     }
