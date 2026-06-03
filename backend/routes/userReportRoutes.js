@@ -17,6 +17,17 @@ const reportSchema = {
   comments: { required: false, type: 'string' }
 };
 
+// Input validation schema for patching felt reports (all fields optional)
+const patchReportSchema = {
+  feltIntensity: { 
+    required: false, 
+    type: 'number', 
+    validate: (val) => val >= 1 && val <= 10,
+    message: 'Felt intensity must be a number between 1 (not felt) and 10 (extreme).' 
+  },
+  comments: { required: false, type: 'string' }
+};
+
 // Protect all routes under this module
 router.use(protect);
 
@@ -32,6 +43,7 @@ router.route('/earthquake/:earthquakeId/stats')
 router.route('/:id')
   .get(UserReportController.getOne)
   .put(UserReportController.update)
+  .patch(validate(patchReportSchema), UserReportController.patch)
   .delete(UserReportController.delete);
 
 export default router;

@@ -86,6 +86,18 @@ class EarthquakeController {
       ApiResponse.success(200, { deletedId: eq.eventId }, 'Earthquake event deleted successfully')
     );
   });
+
+  /**
+   * Patches an existing earthquake event (Admin only).
+   * Route: PATCH /api/v1/earthquakes/:id
+   */
+  static patch = asyncHandler(async (req, res) => {
+    const eq = await EarthquakeService.patchEarthquake(req.params.id, req.body);
+
+    res.status(200).json(
+      ApiResponse.success(200, eq, 'Earthquake event patched successfully')
+    );
+  });
 }
 
 export default EarthquakeController;

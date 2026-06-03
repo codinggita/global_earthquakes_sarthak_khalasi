@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from '../config/db.js';
 import Earthquake from '../models/Earthquake.js';
 import User from '../models/User.js';
@@ -7,6 +10,9 @@ import UserReport from '../models/UserReport.js';
 
 // Load env variables
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Generates highly realistic mock earthquake data if live fetch fails.
@@ -128,70 +134,144 @@ const seedData = async () => {
 
     // 3. Seed Earthquakes
     let earthquakes = [];
-    console.log('[Seeder] Connecting to live USGS Earthquake GeoJSON Feed...');
-    
+    const datasetPath = path.resolve(__dirname, '../../dataset.json');
+    let hasLocalDataset = false;
+
     try {
-      // Fetching moderate to large earthquakes (Mag 2.5+) in the past week (usually thousands of events)
-      const response = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson');
-      
-      if (!response.ok) {
-        throw new Error(`USGS HTTP Error: Status ${response.status}`);
+      await fs.access(datasetPath);
+      hasLocalDataset = true;
+    } catch (err) {
+      // Local dataset not found
+    }
+
+    if (hasLocalDataset) {
+      console.log('[Seeder] Local dataset.json detected. Seeding database from local file...');
+      try {
+        const rawData = await fs.readFile(datasetPath, 'utf-8');
+        const parsedData = JSON.parse(rawData);
+        console.log(`[Seeder] Successfully loaded ${parsedData.length} records from dataset.json.`);
+
+        earthquakes = parsedData.map((item, idx) => {
+          const lat = parseFloat(item.latitude) || 0;
+          const lng = parseFloat(item.longitude) || 0;
+          const depth = parseFloat(item.depth) || 0;
+          const mag = parseFloat(item.mag) || 0;
+          const eventId = item.id || `dataset${idx}`;
+
+          return {
+            eventId,
+            mag,
+            place: item.place || 'Unknown Location',
+            time: item.time ? new Date(item.time) : new Date(),
+            updated: item.updated ? new Date(item.updated) : null,
+            tz: item.tz ? parseInt(item.tz, 10) : null,
+            url: item.url || `https://earthquake.usgs.gov/earthquakes/eventpage/${eventId}`,
+            detail: item.detail || `https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/${eventId}.geojson`,
+            felt: item.felt ? parseInt(item.felt, 10) : 0,
+            cdi: item.cdi ? parseFloat(item.cdi) : null,
+            mmi: item.mmi ? parseFloat(item.mmi) : null,
+            alert: item.alert || null,
+            status: item.status || 'automatic',
+            tsunami: item.tsunami === 'true' || item.tsunami === true || item.tsunami === 1,
+            sig: item.sig ? parseInt(item.sig, 10) : Math.floor(mag * 100),
+            net: item.net || '',
+            code: item.code || '',
+            ids: item.ids || '',
+            sources: item.sources || '',
+            types: item.types || '',
+            nst: item.nst ? parseInt(item.nst, 10) : null,
+            dmin: item.dmin ? parseFloat(item.dmin) : null,
+            rms: item.rms ? parseFloat(item.rms) : null,
+            gap: item.gap ? parseFloat(item.gap) : null,
+            magType: item.magType || 'mb',
+            type: item.type || 'earthquake',
+            title: item.title || `M ${mag.toFixed(1)} - ${item.place || 'Unknown Location'}`,
+            geometry: {
+              type: 'Point',
+              coordinates: [lng, lat, depth]
+            }
+          };
+        });
+
+        // Filter out duplicate eventIds
+        const seenIds = new Set();
+        earthquakes = earthquakes.filter(eq => {
+          if (seenIds.has(eq.eventId)) return false;
+          seenIds.add(eq.eventId);
+          return true;
+        });
+        console.log(`[Seeder] Filtered duplicates. ${earthquakes.length} unique records to insert.`);
+      } catch (err) {
+        console.error(`[Seeder] Error parsing local dataset.json: ${err.message}. Falling back to live feed...`);
+        hasLocalDataset = false;
       }
+    }
 
-      const geojsonData = await response.json();
-      console.log(`[Seeder] Successfully fetched ${geojsonData.features.length} live features from USGS.`);
-
-      // Map GeoJSON features to Mongoose model schema
-      earthquakes = geojsonData.features.map(feat => {
-        const props = feat.properties;
-        const geom = feat.geometry;
+    if (!hasLocalDataset) {
+      console.log('[Seeder] Connecting to live USGS Earthquake GeoJSON Feed...');
+      try {
+        // Fetching moderate to large earthquakes (Mag 2.5+) in the past week
+        const response = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson');
         
-        return {
-          eventId: feat.id,
-          mag: props.mag || 0,
-          place: props.place || 'Unknown Location',
-          time: new Date(props.time),
-          updated: props.updated ? new Date(props.updated) : null,
-          tz: props.tz || null,
-          url: props.url || '',
-          detail: props.detail || '',
-          felt: props.felt || 0,
-          cdi: props.cdi || null,
-          mmi: props.mmi || null,
-          alert: props.alert || null,
-          status: props.status || 'automatic',
-          tsunami: props.tsunami === 1,
-          sig: props.sig || null,
-          net: props.net || '',
-          code: props.code || '',
-          ids: props.ids || '',
-          sources: props.sources || '',
-          types: props.types || '',
-          nst: props.nst || null,
-          dmin: props.dmin || null,
-          rms: props.rms || null,
-          gap: props.gap || null,
-          magType: props.magType || 'mw',
-          type: props.type || 'earthquake',
-          title: props.title || 'Seismic Event',
-          geometry: {
-            type: 'Point',
-            coordinates: geom.coordinates // [longitude, latitude, depth]
-          }
-        };
-      });
+        if (!response.ok) {
+          throw new Error(`USGS HTTP Error: Status ${response.status}`);
+        }
 
-      // Filter out duplicate eventIds if any in the USGS feed
-      const seenIds = new Set();
-      earthquakes = earthquakes.filter(eq => {
-        if (seenIds.has(eq.eventId)) return false;
-        seenIds.add(eq.eventId);
-        return true;
-      });
+        const geojsonData = await response.json();
+        console.log(`[Seeder] Successfully fetched ${geojsonData.features.length} live features from USGS.`);
 
-    } catch (apiError) {
-      console.warn(`[Seeder] WARNING: Could not connect to USGS live feed (${apiError.message}). Falling back to local offline mock generator...`);
-      earthquakes = generateMockEarthquakes();
+        // Map GeoJSON features to Mongoose model schema
+        earthquakes = geojsonData.features.map(feat => {
+          const props = feat.properties;
+          const geom = feat.geometry;
+          
+          return {
+            eventId: feat.id,
+            mag: props.mag || 0,
+            place: props.place || 'Unknown Location',
+            time: new Date(props.time),
+            updated: props.updated ? new Date(props.updated) : null,
+            tz: props.tz || null,
+            url: props.url || '',
+            detail: props.detail || '',
+            felt: props.felt || 0,
+            cdi: props.cdi || null,
+            mmi: props.mmi || null,
+            alert: props.alert || null,
+            status: props.status || 'automatic',
+            tsunami: props.tsunami === 1,
+            sig: props.sig || null,
+            net: props.net || '',
+            code: props.code || '',
+            ids: props.ids || '',
+            sources: props.sources || '',
+            types: props.types || '',
+            nst: props.nst || null,
+            dmin: props.dmin || null,
+            rms: props.rms || null,
+            gap: props.gap || null,
+            magType: props.magType || 'mw',
+            type: props.type || 'earthquake',
+            title: props.title || 'Seismic Event',
+            geometry: {
+              type: 'Point',
+              coordinates: geom.coordinates // [longitude, latitude, depth]
+            }
+          };
+        });
+
+        // Filter out duplicate eventIds if any in the USGS feed
+        const seenIds = new Set();
+        earthquakes = earthquakes.filter(eq => {
+          if (seenIds.has(eq.eventId)) return false;
+          seenIds.add(eq.eventId);
+          return true;
+        });
+
+      } catch (apiError) {
+        console.warn(`[Seeder] WARNING: Could not connect to USGS live feed (${apiError.message}). Falling back to local offline mock generator...`);
+        earthquakes = generateMockEarthquakes();
+      }
     }
 
     console.log(`[Seeder] Importing ${earthquakes.length} earthquakes into MongoDB...`);
