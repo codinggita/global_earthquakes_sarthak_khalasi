@@ -1,0 +1,571 @@
+{
+  "info": {
+    "_postman_id": "8b9356ef-cd7b-4026-9d62-9cf5a1a1f054",
+    "name": "Global Earthquakes API",
+    "description": "API collection for the Global Earthquakes full-stack platform. Contains endpoints for authentication, earthquake CRUD, MongoDB stats aggregation, and user felt reports. Supports local and production environments using variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Registers a new user on the platform. Roles default to 'user'. Can be updated to 'admin' manually in the database."
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseJson = pm.response.json();",
+                  "if (responseJson && responseJson.data && responseJson.data.token) {",
+                  "    pm.environment.set(\"token\", responseJson.data.token);",
+                  "    console.log(\"Access Token successfully set to environment variable 'token'\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logins in an existing user and retrieves a JWT access token. This token is automatically saved into the Postman environment variable `token` by the post-request script."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "profile"
+              ]
+            },
+            "description": "Retrieves profile details of the currently authenticated user. Requires valid JWT Bearer authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Invalidates the current session and logs out the user."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Earthquakes",
+      "item": [
+        {
+          "name": "Get All Earthquakes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/earthquakes?page=1&limit=20&minMag=4.0&sort=-time",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "earthquakes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (pagination)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of records per page"
+                },
+                {
+                  "key": "minMag",
+                  "value": "4.0",
+                  "description": "Minimum magnitude threshold"
+                },
+                {
+                  "key": "maxMag",
+                  "value": "9.0",
+                  "disabled": true,
+                  "description": "Maximum magnitude threshold"
+                },
+                {
+                  "key": "status",
+                  "value": "reviewed",
+                  "disabled": true,
+                  "description": "Earthquake verification status (automatic, manual, reviewed)"
+                },
+                {
+                  "key": "alert",
+                  "value": "green",
+                  "disabled": true,
+                  "description": "USGS alert levels (green, yellow, orange, red)"
+                },
+                {
+                  "key": "tsunami",
+                  "value": "true",
+                  "disabled": true,
+                  "description": "Filter by tsunami threat generation"
+                },
+                {
+                  "key": "search",
+                  "value": "California",
+                  "disabled": true,
+                  "description": "Search matching location name"
+                },
+                {
+                  "key": "sort",
+                  "value": "-time",
+                  "description": "Sorting parameters (e.g. -time, mag, -mag)"
+                }
+              ]
+            },
+            "description": "Fetches a paginated, filterable, and sortable list of all earthquakes."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Earthquake Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/earthquakes/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "earthquakes",
+                "stats"
+              ]
+            },
+            "description": "Fetches advanced seismic statistics computed using MongoDB Aggregation Pipelines (Monthly trends, severity tiers, tsunami risk, and regional network distributions)."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Earthquake By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/earthquakes/{{earthquakeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "earthquakes",
+                "{{earthquakeId}}"
+              ]
+            },
+            "description": "Fetches detailed information for a single earthquake event by its ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Earthquake (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"M 5.8 - 10 km N of Los Angeles, California\",\n  \"place\": \"10 km N of Los Angeles, California\",\n  \"mag\": 5.8,\n  \"magType\": \"mw\",\n  \"type\": \"earthquake\",\n  \"time\": \"2026-06-17T12:00:00.000Z\",\n  \"coordinates\": [-118.2437, 34.0522, 12.5],\n  \"depth\": 12.5,\n  \"status\": \"automatic\",\n  \"tsunami\": 0,\n  \"sig\": 510,\n  \"nst\": 45,\n  \"dmin\": 0.08,\n  \"rms\": 0.15,\n  \"gap\": 25,\n  \"alert\": \"green\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/earthquakes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "earthquakes"
+              ]
+            },
+            "description": "Creates a new earthquake event. Restricted to users with the 'admin' role."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Earthquake (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mag\": 6.2,\n  \"title\": \"M 6.2 - 10 km N of Los Angeles, California\",\n  \"status\": \"reviewed\",\n  \"alert\": \"yellow\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/earthquakes/{{earthquakeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "earthquakes",
+                "{{earthquakeId}}"
+              ]
+            },
+            "description": "Updates details of an existing earthquake record by ID. Restricted to users with the 'admin' role."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Earthquake (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/earthquakes/{{earthquakeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "earthquakes",
+                "{{earthquakeId}}"
+              ]
+            },
+            "description": "Soft-deletes an earthquake record. Restricted to users with the 'admin' role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Felt Reports",
+      "item": [
+        {
+          "name": "Get Felt Reports",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reports"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Fetches felt intensity reports. Normal users will retrieve only their own reports, while administrators will retrieve reports submitted by all users."
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Felt Report",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"earthquakeId\": \"{{earthquakeId}}\",\n  \"feltIntensity\": 6,\n  \"comments\": \"Felt strong shaking for about 15 seconds. Bookcases rattled and some items fell off shelves.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reports",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reports"
+              ]
+            },
+            "description": "Submits a new intensity report (1-10 scale) experienced by a user during a specific earthquake event."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Felt Report",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"feltIntensity\": 5,\n  \"comments\": \"Updated comment: Shaking felt moderate, mostly swaying light fixtures.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reports/{{reportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reports",
+                "{{reportId}}"
+              ]
+            },
+            "description": "Updates a previously submitted felt report. Users can only update their own reports."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Felt Report",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports/{{reportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reports",
+                "{{reportId}}"
+              ]
+            },
+            "description": "Deletes a felt report record. Can be triggered by the report owner or an administrator."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "System Health",
+      "item": [
+        {
+          "name": "Health Status Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Performs system diagnositcs including database connection state, server memory stats, processor load, and server uptime."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string",
+      "description": "Base URL of the Global Earthquakes API server. Change to production URL (e.g. Render URL) when testing in production."
+    },
+    {
+      "key": "earthquakeId",
+      "value": "664bdaecfcd7b40269d629cf",
+      "type": "string",
+      "description": "ID of a test earthquake for fetching, updating, or referencing in felt reports."
+    },
+    {
+      "key": "reportId",
+      "value": "664bdbf2fcd7b40269d629f1",
+      "type": "string",
+      "description": "ID of a test felt report for checking, editing, or deleting."
+    }
+  ]
+}
