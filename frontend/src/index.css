@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   Global Styles & Custom Properties
+   ============================================ */
+
+:root {
+  --color-primary: #6366f1;
+  --color-primary-light: #818cf8;
+  --color-primary-dark: #4f46e5;
+  --color-accent: #d946ef;
+  --color-surface: #f8fafc;
+  --color-surface-card: #ffffff;
+  --color-surface-elevated: #f1f5f9;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-border: #e2e8f0;
+  --color-border-light: #f1f5f9;
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 72px;
+  --navbar-height: 64px;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+.dark {
+  --color-surface: #0f172a;
+  --color-surface-card: #1e293b;
+  --color-surface-elevated: #334155;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-border: #334155;
+  --color-border-light: #1e293b;
+  --glass-bg: rgba(15, 23, 42, 0.8);
+  --glass-border: rgba(51, 65, 85, 0.5);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* ============================================
+   Base Resets & Typography
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ============================================
+   Scrollbar Styling
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* ============================================
+   Glassmorphism Utilities
+   ============================================ */
+
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1rem;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 60px -12px rgba(99, 102, 241, 0.15);
+  }
+
+  /* Gradient Text */
+  .gradient-text {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Stats card gradient borders */
+  .gradient-border {
+    position: relative;
+    background: var(--color-surface-card);
+    border-radius: 1rem;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    padding: 1.5px;
+    background: linear-gradient(135deg, #6366f1, #d946ef);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-elevated) 25%,
+      var(--color-border) 50%,
+      var(--color-surface-elevated) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* Page transition */
+  .page-enter {
+    animation: slideUp 0.4s ease-out;
+  }
+}
+
+/* ============================================
+   Seismic Magnitude Color Utilities
+   ============================================ */
+
+@layer utilities {
+  .mag-minor { color: #22c55e; }
+  .mag-moderate { color: #eab308; }
+  .mag-strong { color: #f97316; }
+  .mag-major { color: #ef4444; }
+  .mag-great { color: #dc2626; }
+
+  .bg-mag-minor { background-color: rgba(34, 197, 94, 0.1); }
+  .bg-mag-moderate { background-color: rgba(234, 179, 8, 0.1); }
+  .bg-mag-strong { background-color: rgba(249, 115, 22, 0.1); }
+  .bg-mag-major { background-color: rgba(239, 68, 68, 0.1); }
+  .bg-mag-great { background-color: rgba(220, 38, 38, 0.1); }
+}

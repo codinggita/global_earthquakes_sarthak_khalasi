@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.log
+
+# Large data datasets
+dataset.json
