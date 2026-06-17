@@ -4,6 +4,9 @@
   "description": "Root package config for full-stack deployment on Vercel",
   "main": "api/index.js",
   "type": "module",
+  "scripts": {
+    "start": "node backend/src/server.js"
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
